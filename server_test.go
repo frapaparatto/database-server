@@ -13,7 +13,6 @@ import (
 func TestGet(t *testing.T) {
 	tests := []struct {
 		name       string
-		method     string
 		url        string
 		setup      map[string]string
 		wantStatus int
@@ -21,7 +20,6 @@ func TestGet(t *testing.T) {
 	}{
 		{
 			name:       "no parameters",
-			method:     "GET",
 			url:        "/get",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -30,7 +28,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "extra parameter",
-			method:     "GET",
 			url:        "/get?key=a&foo=1",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -39,7 +36,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "repeated parameter",
-			method:     "GET",
 			url:        "/get?key=a&key=b",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -48,7 +44,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "wrong parameter name",
-			method:     "GET",
 			url:        "/get?foo=1",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -57,7 +52,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "never set",
-			method:     "GET",
 			url:        "/get?key=missing",
 			wantStatus: http.StatusNotFound,
 			wantBody: map[string]string{
@@ -66,7 +60,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "empty key",
-			method:     "GET",
 			url:        "/get?key=",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -75,7 +68,6 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:       "parameter found",
-			method:     "GET",
 			url:        "/get?key=a",
 			setup:      map[string]string{"a": "1"},
 			wantStatus: http.StatusOK,
@@ -92,7 +84,7 @@ func TestGet(t *testing.T) {
 				storage.Set(k, v)
 			}
 
-			r := httptest.NewRequest(tc.method, tc.url, nil)
+			r := httptest.NewRequest(http.MethodGet, tc.url, nil)
 			w := httptest.NewRecorder()
 
 			h := handleGet(storage)
@@ -121,7 +113,6 @@ func TestGet(t *testing.T) {
 func TestSet(t *testing.T) {
 	tests := []struct {
 		name       string
-		method     string
 		url        string
 		setup      map[string]string
 		wantStatus int
@@ -132,7 +123,6 @@ func TestSet(t *testing.T) {
 	}{
 		{
 			name:       "no parameters",
-			method:     "GET",
 			url:        "/set",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -141,7 +131,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "empty key",
-			method:     "GET",
 			url:        "/set?=1",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -150,7 +139,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "empty value",
-			method:     "GET",
 			url:        "/set?a=",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -159,7 +147,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "key without equals sign",
-			method:     "GET",
 			url:        "/set?a",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -168,7 +155,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "repeated key",
-			method:     "GET",
 			url:        "/set?a=1&a=2",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -177,7 +163,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "repeated key with second value empty",
-			method:     "GET",
 			url:        "/set?a=1&a=",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -188,7 +173,6 @@ func TestSet(t *testing.T) {
 		// so an empty first value is reported as an empty value.
 		{
 			name:       "repeated key with first value empty",
-			method:     "GET",
 			url:        "/set?a=&a=1",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -200,7 +184,6 @@ func TestSet(t *testing.T) {
 		// It never fails on a correct handler, but it can miss the regression on some runs.
 		{
 			name:       "one invalid pair among valid ones",
-			method:     "GET",
 			url:        "/set?a=1&b=",
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
@@ -209,7 +192,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "rejected request keeps existing value",
-			method:     "GET",
 			url:        "/set?a=3&a=4",
 			setup:      map[string]string{"a": "2"},
 			wantStatus: http.StatusBadRequest,
@@ -220,7 +202,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "single pair",
-			method:     "GET",
 			url:        "/set?a=1",
 			wantStatus: http.StatusOK,
 			wantBody: map[string]string{
@@ -230,7 +211,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "multiple pairs",
-			method:     "GET",
 			url:        "/set?a=1&b=2",
 			wantStatus: http.StatusOK,
 			wantBody: map[string]string{
@@ -241,7 +221,6 @@ func TestSet(t *testing.T) {
 		},
 		{
 			name:       "overwrite existing key",
-			method:     "GET",
 			url:        "/set?a=new",
 			setup:      map[string]string{"a": "old"},
 			wantStatus: http.StatusOK,
@@ -259,7 +238,7 @@ func TestSet(t *testing.T) {
 				storage.Set(k, v)
 			}
 
-			r := httptest.NewRequest(tc.method, tc.url, nil)
+			r := httptest.NewRequest(http.MethodGet, tc.url, nil)
 			w := httptest.NewRecorder()
 
 			h := handleSet(storage)
