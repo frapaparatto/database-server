@@ -21,6 +21,7 @@ func writeJSONResponse(w http.ResponseWriter, code int, payload any) {
 	if err != nil {
 		log.Printf("Error marshalling JSON: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"error":"internal error"}`))
 		return
 	}
 	w.WriteHeader(code)
