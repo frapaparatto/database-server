@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if rm "experiments.log";
+then 
+  echo "experiments.log removed successfully";
+fi
+
+echo "running ./experiment";
+./experiment
