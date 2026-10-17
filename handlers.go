@@ -3,13 +3,11 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
 func handleGet(s *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("URL of the request: ", r.URL)
 		d := r.URL.Query()
 		k := d.Get("key")
 
@@ -39,7 +37,6 @@ func handleGet(s *Storage) http.HandlerFunc {
 
 func handleSet(s *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("URL of the request: ", r.URL)
 		q := r.URL.Query()
 		for k, v := range q {
 			s.Set(k, v[0])
