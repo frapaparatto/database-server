@@ -4,7 +4,7 @@ An in-memory key-value store served over HTTP, written in Go with the standard l
 
 ## Requirements
 
-Go 1.27 or later.
+Go 1.27.1 or later.
 
 ## Run
 
@@ -16,9 +16,9 @@ The server listens on `http://localhost:4000`.
 
 ## API
 
-Both endpoints accept only `GET`. Any other method returns `405 Method Not Allowed`.
+Both endpoints accept only `GET` (and `HEAD`, which a `GET` route also matches).
 
-Responses are JSON. Errors have the shape `{"error": "<message>"}`.
+Responses from the handlers are JSON. Errors have the shape `{"error": "<message>"}`. Other methods get `405 Method Not Allowed` and unknown paths get `404 Not Found`; both come from the mux as plain text.
 
 In zsh, quote the URLs in `curl` commands, because `?` is a glob character.
 
@@ -76,7 +76,11 @@ go test -race ./...
 - `TestGet` and `TestSet` check every case in the tables above: status, body, and for `/set` the content of the store after the request.
 - `TestConcurrentAccess` runs reads and writes on the same store at the same time. With `-race`, it fails if any access to the store is not synchronized.
 
-The `experiments` script sends requests to a running server and logs each response to `experiments.log`, for manual checks.
+The `experiment` script sends requests to a running server and logs each response to `experiments.log`, for manual checks:
+
+```sh
+./experiment [label]
+```
 
 ## Project layout
 
