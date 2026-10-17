@@ -11,7 +11,7 @@ func main() {
 	mux := http.NewServeMux()
 	storage := NewStorage()
 	s := &http.Server{
-		Addr:         ":" + port,
+		Addr:         "localhost:" + port,
 		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
