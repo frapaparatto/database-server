@@ -22,7 +22,7 @@ func main() {
 	setHandler := handleSet(storage)
 
 	mux.HandleFunc("GET /get", getHandler)
-	mux.HandleFunc("/set", setHandler)
+	mux.HandleFunc("GET /set", setHandler)
 
 	log.Println("Starting database server")
 	log.Fatal(s.ListenAndServe())
