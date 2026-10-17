@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"maps"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 )
 
@@ -287,4 +289,41 @@ func TestSet(t *testing.T) {
 	}
 }
 
-//func TestConcurrentAccess(t *testing.T) {}
+func TestConcurrentAccess(t *testing.T) {
+	storage := NewStorage()
+	var wg sync.WaitGroup
+
+	for i := range 50 {
+		setURL := fmt.Sprintf("/set?k%d=v%d", i, i)
+		getURL := fmt.Sprintf("/get?key=k%d", i)
+
+		wg.Go(func() {
+			r := httptest.NewRequest(http.MethodGet, setURL, nil)
+			w := httptest.NewRecorder()
+
+			h := handleSet(storage)
+			h(w, r)
+
+			if http.StatusOK != w.Code {
+				t.Errorf("%s: want status %d, got %d", setURL, http.StatusOK, w.Code)
+			}
+		})
+
+		wg.Go(func() {
+			r := httptest.NewRequest(http.MethodGet, getURL, nil)
+			w := httptest.NewRecorder()
+
+			h := handleGet(storage)
+			h(w, r)
+		})
+	}
+	wg.Wait()
+
+	for i := range 50 {
+		k := fmt.Sprintf("k%d", i)
+		wantV := fmt.Sprintf("v%d", i)
+		if v, ok := storage.Get(k); !ok || v != wantV {
+			t.Errorf("key %q: want stored %q, got %q (present: %t)", k, wantV, v, ok)
+		}
+	}
+}
