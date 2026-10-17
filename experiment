@@ -8,11 +8,12 @@ BASE_URL="http://localhost:4000"
 LOG_FILE="experiments.log"
 RUN_LABEL="${1:-unlabeled}"
 
-# run_experiment ID DESCRIPTION PATH
+# run_experiment ID DESCRIPTION PATH [METHOD]
 run_experiment() {
   local id="$1"
   local description="$2"
   local path="$3"
+  local method="${4:-GET}"
   local url="${BASE_URL}${path}"
 
   {
@@ -20,9 +21,9 @@ run_experiment() {
     echo "run: ${RUN_LABEL}"
     echo "time: $(date '+%Y-%m-%d %H:%M:%S')"
     echo "description: ${description}"
-    echo "request: GET ${url}"
+    echo "request: ${method} ${url}"
     echo "result:"
-    curl -sS -i "$url" 2>&1 || echo "curl failed (is the server running?)"
+    curl -sS -i -X "$method" "$url" 2>&1 || echo "curl failed (is the server running?)"
     echo
     echo
   } >> "$LOG_FILE"
@@ -37,3 +38,16 @@ run_experiment "set-partial-invalid" "Set one valid pair and one empty pair" "/s
 run_experiment "get-after-partial-set" "Get a key from the rejected multi-pair set" "/get?key=a"
 run_experiment "update-a-value" "Set a key to be 2 instead of 1" "/set?a=2"
 run_experiment "get-after-update" "Get a key from an update" "/get?key=a"
+run_experiment "set-repeated-value" "Set a key multiple times in the same request" "/set?a=3&a=4"
+run_experiment "get-after-bad-request" "Get a key after a bad request involving that key" "/get?key=a"
+run_experiment "set-two-values" "Set two different keys" "/set?a=3&b=4"
+run_experiment "set-no-params" "Set with no parameters" "/set"
+run_experiment "set-empty-key" "Set with an empty key" "/set?=1"
+run_experiment "set-repeated-key" "Set the same key twice in one request" "/set?a=1&a=2"
+run_experiment "set-multi-valid" "Set two valid pairs in one request" "/set?x=1&y=2"
+run_experiment "get-after-multi" "Get one key from the multi-pair set" "/get?key=y"
+run_experiment "set-overwrite-first" "Set a key" "/set?o=1"
+run_experiment "set-overwrite-second" "Set the same key again with a new value" "/set?o=2"
+run_experiment "get-after-overwrite" "Get the overwritten key" "/get?key=o"
+run_experiment "get-wrong-method" "POST to /get" "/get?key=o" "POST"
+run_experiment "set-wrong-method" "POST to /set" "/set?p=1" "POST"
