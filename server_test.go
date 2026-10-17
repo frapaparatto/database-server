@@ -51,6 +51,14 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
+			name:       "malformed query",
+			url:        "/get?key=a&foo=%zz",
+			wantStatus: http.StatusBadRequest,
+			wantBody: map[string]string{
+				"error": "malformed query string",
+			},
+		},
+		{
 			name:       "never set",
 			url:        "/get?key=missing",
 			wantStatus: http.StatusNotFound,
@@ -188,6 +196,14 @@ func TestSet(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 			wantBody: map[string]string{
 				"error": "empty value for key 'b'",
+			},
+		},
+		{
+			name:       "malformed query",
+			url:        "/set?a=1&b=%zz",
+			wantStatus: http.StatusBadRequest,
+			wantBody: map[string]string{
+				"error": "malformed query string",
 			},
 		},
 		{

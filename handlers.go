@@ -3,11 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 func handleGet(s *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		d := r.URL.Query()
+		d, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, "malformed query string")
+			return
+		}
 		k := d.Get("key")
 
 		if k == "" {
@@ -36,7 +41,11 @@ func handleGet(s *Storage) http.HandlerFunc {
 
 func handleSet(s *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
+		q, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, "malformed query string")
+			return
+		}
 
 		if len(q) == 0 {
 			writeErrorResponse(w, http.StatusBadRequest, "no parameters provided")
