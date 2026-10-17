@@ -21,7 +21,7 @@ func main() {
 	getHandler := handleGet(storage)
 	setHandler := handleSet(storage)
 
-	mux.HandleFunc("/get", getHandler)
+	mux.HandleFunc("GET /get", getHandler)
 	mux.HandleFunc("/set", setHandler)
 
 	log.Println("Starting database server")

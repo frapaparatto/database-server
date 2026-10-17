@@ -11,12 +11,29 @@ func handleGet(s *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("URL of the request: ", r.URL)
 		d := r.URL.Query()
+		k := d.Get("key")
 
-		if v, found := s.Get(d.Get("key")); found {
-			io.WriteString(w, fmt.Sprintf("key: %s, value: %s\n", d.Get("key"), v))
-		} else {
-			io.WriteString(w, fmt.Sprintf("key: %s not found", d.Get("key")))
+		if k == "" {
+			writeErrorResponse(w, http.StatusBadRequest, "missing or empty 'key' parameter", nil)
+			return
 		}
+
+		if len(d) != 1 {
+			writeErrorResponse(w, http.StatusBadRequest, "only the 'key' parameter is allowed", nil)
+			return
+		}
+
+		if len(d["key"]) != 1 {
+			writeErrorResponse(w, http.StatusBadRequest, "'key' must appear exactly once", nil)
+			return
+		}
+
+		v, ok := s.Get(k)
+		if !ok {
+			writeErrorResponse(w, http.StatusNotFound, fmt.Sprintf("key '%s' not found", k), nil)
+			return
+		}
+		writeJSONResponse(w, http.StatusOK, map[string]string{k: v})
 	}
 }
 
